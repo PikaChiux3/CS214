@@ -94,18 +94,69 @@ char *TKGetNextToken(TokenizerT *tk)
 	while(*(streamCheck+i) != '\0')
         {
 		/*printf("While stream isn't empty \n");*/
-	
+		printf("streamCheck+i: %c\n",*(streamCheck+i));
+
                	j = 0;
                	while(*(delim+j) != '\0')
                	{
+			printf("delim+j: %c\n",*(delim+j));
+			printf("delim+j+1: %c\n",*(delim+j+1));
 			/*printf("While delim isn't empty\n");*/
 
-                       	if(*(streamCheck+i) == *(delim+j))
-                       	{
-				/*printf("Char in stream is a delim\n");*/
+			if(*(delim+j) == '\\' && !(*(delim+j+1) == 'a' || *(delim+j+1) == 'b' || *(delim+j+1) == 'f' || *(delim+j+1) == 'n' || *(delim+j+1) == 'r' || *(delim+j+1) == 't' || *(delim+j+1) == 'v' || *(delim+j+1) == '\\' || *(delim+j+1) == '\"'))
+			{
+				printf("Delim+j is \\ and delim+j+1 is not valid escape char\n");
+				
+				j++;
+				if(*(streamCheck+i) != '\\')
+				{
+					if(*(streamCheck+i) == *(delim+j))
+                                	{
+                                        	printf("delim is not a valid escape char, stream is not \\ and matches\n");
 
-                               	isDel = 1;
-                               	break;
+						isDel = 1;
+                                        	break;
+                                	}
+				}
+				else if(*(streamCheck+i) == '\\')
+                                {
+					i++;
+                                        if(*(streamCheck+i) == *(delim+j))
+                                        {
+                                                printf("delim is not a valid escape char, stream is \\\n");
+
+                                                isDel = 1;
+                                                break;
+                                        }
+                                }
+
+			}
+			else if(*(delim+j) == '\\'  && (*(delim+j+1) == 'a' || *(delim+j+1) == 'b' || *(delim+j+1) == 'f' || *(delim+j+1) == 'n' || *(delim+j+1) == 'r' || *(delim+j+1) == 't' || *(delim+j+1) == 'v' || *(delim+j+1) == '\\' || *(delim+j+1) == '\"'))
+			{
+				printf("Delim+j is \\ and delim+j+1 is a valid escape char\n");
+
+				j++;
+				if(*(streamCheck+i) == '\\')
+                                {
+					i++;
+                                        if(*(streamCheck+i) == *(delim+j))
+                                        {
+                                                printf("delim is a valid escape char, stream is matching\n");
+
+                                                isDel = 1;
+                                                break;
+                                        }
+				}
+			}
+			else
+			{	
+                       		if(*(streamCheck+i) == *(delim+j))
+                       		{
+					/*printf("Char in stream is a delim\n");*/
+
+                               		isDel = 1;
+                               		break;
+				}
                        	}
                        	j++;
                	}
@@ -202,8 +253,13 @@ int main(int argc, char **argv)
 		m = 0;
 		while(*(theTok+m) != '\0')
         	{
-			if(*(theTok+m) == '\a' || *(theTok+m) == '\b' || *(theTok+m) == '\f' || *(theTok+m) == '\n' || *(theTok+m) == '\r' || *(theTok+m) == '\t' || *(theTok+m) == '\v' || *(theTok+m) == '\"' || *(theTok+m) == '\\')
-				printf("[0x%.2x]",*(theTok+m));
+			if(*(theTok+m) == '\\' && (*(theTok+m+1) == 'a' || *(theTok+m+1) == 'b' || *(theTok+m+1) == 'f' || *(theTok+m+1) == 'n' || *(theTok+m+1) == 'r' || *(theTok+m+1) == 't' || *(theTok+m+1) == 'v' || *(theTok+m+1) == '"'))
+			{
+				printf("[0x%.2x]",*(theTok+m+1));
+				m++;
+			}
+			else if(*(theTok+m) == '\\' && *(theTok+m+1) == '\0')
+				;
 			else
                 		printf("%c", *(theTok+m));
                 	m++;
