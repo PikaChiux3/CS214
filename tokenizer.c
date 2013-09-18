@@ -37,6 +37,9 @@ char *TKGetNextToken();
 
 TokenizerT *TKCreate(char *separators, char *ts)
 {
+	
+	/* mallocs the tokenizer required, also setting aside variables for separators, the string to be tokenized, 
+	 * as well as room for the next token in the stream */
 	TokenizerT *tokOb = malloc(sizeof(TokenizerT));
 	
 	tokOb->stream = ts;
@@ -85,11 +88,15 @@ char *TKGetNextToken(TokenizerT *tk)
 	int a = 0;
 	int i = 0;
         int j = 0;
-
+	/* Checks to see if a character has been removed while merging literals into escape characters */
         int isDel = 0;
 
 	memcpy(streamCheck, tk->stream, strlen(tk->stream) + 1);
         streamCheck[strlen(tk->stream)] = '\0';
+
+	/* Incrementing two pointers: one to the stream of characters to be tokenized and the other the string 
+	 * containing all the delimiters 
+	 */
 
 	while(*(streamCheck+i) != '\0')
         {
@@ -97,22 +104,23 @@ char *TKGetNextToken(TokenizerT *tk)
 		printf("streamCheck+i: %c\n",*(streamCheck+i));
 
                	j = 0;
+               	/* Checking for Null Terminator */
                	while(*(delim+j) != '\0')
                	{
 			printf("delim+j: %c\n",*(delim+j));
 			printf("delim+j+1: %c\n",*(delim+j+1));
 			/*printf("While delim isn't empty\n");*/
-
+			/* Checking for special characters and handling them per specification of the guidelines */
 			if(*(delim+j) == '\\' && !(*(delim+j+1) == 'a' || *(delim+j+1) == 'b' || *(delim+j+1) == 'f' || *(delim+j+1) == 'n' || *(delim+j+1) == 'r' || *(delim+j+1) == 't' || *(delim+j+1) == 'v' || *(delim+j+1) == '\\' || *(delim+j+1) == '\"'))
 			{
-				printf("Delim+j is \\ and delim+j+1 is not valid escape char\n");
+				/* Delim+j is \\ and delim+j+1 is not valid escape char\n" */
 				
 				j++;
 				if(*(streamCheck+i) != '\\')
 				{
 					if(*(streamCheck+i) == *(delim+j))
                                 	{
-                                        	printf("delim is not a valid escape char, stream is not \\ and matches\n");
+                                        /* delim is not a valid escape char, stream is not \\ and matches\n */
 
 						isDel = 1;
                                         	break;
@@ -123,7 +131,7 @@ char *TKGetNextToken(TokenizerT *tk)
 					i++;
                                         if(*(streamCheck+i) == *(delim+j))
                                         {
-                                                printf("delim is not a valid escape char, stream is \\\n");
+                                                /* delim is not a valid escape char, stream is \\\n" */
 
                                                 isDel = 1;
                                                 break;
@@ -133,7 +141,7 @@ char *TKGetNextToken(TokenizerT *tk)
 			}
 			else if(*(delim+j) == '\\'  && (*(delim+j+1) == 'a' || *(delim+j+1) == 'b' || *(delim+j+1) == 'f' || *(delim+j+1) == 'n' || *(delim+j+1) == 'r' || *(delim+j+1) == 't' || *(delim+j+1) == 'v' || *(delim+j+1) == '\\' || *(delim+j+1) == '\"'))
 			{
-				printf("Delim+j is \\ and delim+j+1 is a valid escape char\n");
+				/* Delim+j is \\ and delim+j+1 is a valid escape char\n */
 
 				j++;
 				if(*(streamCheck+i) == '\\')
@@ -141,7 +149,7 @@ char *TKGetNextToken(TokenizerT *tk)
 					i++;
                                         if(*(streamCheck+i) == *(delim+j))
                                         {
-                                                printf("delim is a valid escape char, stream is matching\n");
+                                                /* delim is a valid escape char, stream is matching\n */
 
                                                 isDel = 1;
                                                 break;
@@ -183,6 +191,7 @@ char *TKGetNextToken(TokenizerT *tk)
 			tokSize++;
 		}
 		
+		/* Incrementing */
 		/*printf("Curr char: %c\n", *(streamCheck+i));	*/
 		i++;
 	
@@ -191,6 +200,8 @@ char *TKGetNextToken(TokenizerT *tk)
 		isDel = 0;
        	}
 
+	/* Checking for the last token (in which there is no delimiter to end the string */
+	
 	if(tokSize != 0)
 	{
 		token = malloc(tokSize+1);
@@ -229,6 +240,8 @@ int main(int argc, char **argv)
 	int m = 0;
 
 	
+	/* Checking input */
+	
 	if (argc != 3)
 	{
                 fprintf(stderr, "ERROR: INVALID NUMBER OF INPUTS\n");
@@ -247,6 +260,9 @@ int main(int argc, char **argv)
 
 	tokenizer = TKCreate(delims, textStream);
 	theTok = tokenizer->currTok;
+	
+	/* Printing escape characters as hex values per instructions, done in the main routine */
+	
 		
 	while(tokenizer->stream != '\0' && theTok != '\0')
 	{
@@ -270,7 +286,7 @@ int main(int argc, char **argv)
 		theTok = TKGetNextToken(tokenizer);
 	}
 
-	
+	/* Freeing memory */
 	TKDestroy(tokenizer);
 
   	return 0;
